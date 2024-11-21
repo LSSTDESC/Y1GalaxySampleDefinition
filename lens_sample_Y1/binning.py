@@ -1,20 +1,16 @@
-from enum import Enum
 import numpy as np 
-from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
+import scipy
+import h5py
+import pandas as pd
+import qp
+
+from scipy.interpolate import interp1d
 from scipy import integrate
 from rail.estimation.algos.naive_stack import NaiveStackSummarizer
 from rail.estimation.algos.true_nz import TrueNZHistogrammer
 from rail.core.stage import RailStage
-import scipy
-import tables_io
-from scipy.special import erf
-import h5py
-import pandas as pd
-import qp
 from scipy.interpolate import UnivariateSpline
-from rail.evaluation.dist_to_dist_evaluator import DistToDistEvaluator
-
 
 from rail.core.data import (
     QPHandle,
@@ -60,6 +56,7 @@ def create_filtered_hdf5_files(mask, path, zphot):
             for bin_i in range(1, 6):
                 create_bin_hdf5_file(filtered_photometry, bin_i)
 
+                
 # Function to filter photometry based on the specified columns and mask
 def filter_photometry(old_photometry_group, columns_to_keep, mask):
     filtered_photometry = {}
@@ -67,6 +64,7 @@ def filter_photometry(old_photometry_group, columns_to_keep, mask):
         if col in old_photometry_group:
             filtered_photometry[col] = old_photometry_group[col][:][mask]
     return filtered_photometry
+
 
 # Function to create an HDF5 file for a specific redshift bin
 def create_bin_hdf5_file(filtered_photometry, bin_i):
@@ -93,6 +91,7 @@ def create_bin_hdf5_file(filtered_photometry, bin_i):
         class_id_data = np.full(len(bin_indices), bin_i)
         photometry_group.create_dataset("class_id", data=class_id_data)
 
+        
 # Function to assign class IDs based on redshift values
 def assign_class_id(z):
     if 0.2 <= z < 0.4:
@@ -108,6 +107,7 @@ def assign_class_id(z):
     else:
         return 0
 
+    
 # Function to create output bin files based on class IDs
 def create_output_bin_file(bin_num, row_indices, class_ids):
     output_file = f'output_tomo_binned_bin{bin_num}.hdf5'
@@ -117,8 +117,7 @@ def create_output_bin_file(bin_num, row_indices, class_ids):
         outfile.create_dataset('row_index', data=row_indices)
         outfile.create_dataset('class_id', data=bin_class_ids)
 
-    #print(f"HDF5 file '{output_file}' created successfully!")
-
+    
 # Function to process each bin and create the corresponding files
 def process_bins():
     for bin_num in range(1, 6):
@@ -132,6 +131,7 @@ def process_bins():
         # Create the output bin file
         create_output_bin_file(bin_num, row_indices, class_ids)
 
+        
 # Function to create histograms for tomographic bins
 def create_histograms():
     for i in range(5):
@@ -152,8 +152,8 @@ def create_histograms():
         tomo_bins = DS.read_file('tomo_bins', path=tomo_file, handle_class=TableHandle)
         
         out_hist = nz_hist.histogram(true_nz, tomo_bins)
-        #print(f"Histogram for bin {i + 1} created successfully.")
 
+        
 def plot_nz_from_bins(num_bins, param, sizes):
     colors = ['#4d4d4d', '#08306b', '#6baed6', '#ffcc00', '#ffb347']
     plt.figure(figsize=(14, 10))  # Create a new figure for plotting
@@ -187,7 +187,6 @@ def plot_nz_from_bins(num_bins, param, sizes):
         # Normalization for photometric curve
         area_phot = np.trapz(y_phot, x_phot)
         y_phot_normalized = y_phot / area_phot  
-        
         
         
         ### metrics ###
@@ -249,8 +248,7 @@ def plot_nz_from_bins(num_bins, param, sizes):
     plt.show()
 
 
-
-def metris_sample(num_bins, param, sizes):
+def metrics_sample(num_bins, param, sizes):
     colors = ['#4d4d4d', '#08306b', '#6baed6', '#ffcc00', '#ffb347']
     plt.figure(figsize=(14, 10))  # Create a new figure for plotting
     
